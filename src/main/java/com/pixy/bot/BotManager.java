@@ -59,7 +59,9 @@ public final class BotManager {
         }
 
         // Fetch the skin's texture property from Mojang, keep our own name + uuid.
-        server.services().profileResolver().fetchByName(skinName).whenComplete((opt, err) ->
+                java.util.concurrent.CompletableFuture
+            .supplyAsync(() -> server.services().profileResolver().fetchByName(skinName))
+            .whenComplete((opt, err) ->
             server.execute(() -> {
                 GameProfile profile = offline;
                 if (opt != null && opt.isPresent()) {
