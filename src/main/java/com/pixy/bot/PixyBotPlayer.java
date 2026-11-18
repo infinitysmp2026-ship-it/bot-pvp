@@ -1,8 +1,6 @@
 package com.pixy.bot;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
@@ -14,11 +12,13 @@ public class PixyBotPlayer extends ServerPlayer {
 
     public final float spawnYaw;
     public final float spawnPitch;
+    private final MinecraftServer botServer;
     private boolean removing = false;
 
     public PixyBotPlayer(MinecraftServer server, ServerLevel level, GameProfile profile,
                          float yaw, float pitch) {
         super(server, level, profile, ClientInformation.createDefault());
+        this.botServer = server;
         this.spawnYaw = yaw;
         this.spawnPitch = pitch;
     }
@@ -26,7 +26,7 @@ public class PixyBotPlayer extends ServerPlayer {
     /** Fake players have no connection ticking them, so we drive the tick ourselves. */
     @Override
     public void tick() {
-        if (this.getServer().getTickCount() % 10 == 0) {
+        if (botServer.getTickCount() % 10 == 0) {
             this.connection.resetPosition();
             this.level().getChunkSource().move(this);
         }
@@ -45,9 +45,9 @@ public class PixyBotPlayer extends ServerPlayer {
     public void scheduleRemoval() {
         if (removing) return;
         removing = true;
-        this.getServer().execute(() -> {
+        botServer.execute(() -> {
             BotManager.unregister(this);
-            this.getServer().getPlayerList().remove(this);
+            botServer.getPlayerList().remove(this);
         });
     }
 }
